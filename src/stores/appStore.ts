@@ -8,6 +8,17 @@ import { buildDemoData } from '@/lib/demo'
 export type AppView = 'dashboard' | 'calendar' | 'stats' | 'habits'
 export type CalendarMode = 'week' | 'month'
 
+export interface HabitDraft {
+  name?: string
+  type?: 'fixed' | 'extra'
+  category?: string
+  measurementType?: Habit['measurementType']
+  targetValue?: number
+  scheduleDays?: number[] | undefined
+  startDate?: string
+  endDate?: string
+}
+
 interface AppState {
   habits: Habit[]
   logs: HabitLog[]
@@ -16,9 +27,11 @@ interface AppState {
   view: AppView
   calendarMode: CalendarMode
   anchorDate: string
+  habitDraft: HabitDraft | null
   setView: (view: AppView) => void
   setCalendarMode: (mode: CalendarMode) => void
   setAnchorDate: (date: string) => void
+  setHabitDraft: (draft: HabitDraft | null) => void
   initialize: () => Promise<void>
   upsertHabit: (habit: Omit<Habit, 'id' | 'createdAt'> & { id?: string; createdAt?: string }) => Promise<void>
   archiveHabit: (id: string, archived: boolean) => Promise<void>
@@ -36,10 +49,12 @@ export const useAppStore = create<AppState>((set, get) => ({
   view: 'dashboard',
   calendarMode: 'week',
   anchorDate: new Date().toISOString().slice(0, 10),
+  habitDraft: null,
 
   setView: (view) => set({ view }),
   setCalendarMode: (calendarMode) => set({ calendarMode }),
   setAnchorDate: (anchorDate) => set({ anchorDate }),
+  setHabitDraft: (habitDraft) => set({ habitDraft }),
 
   async initialize() {
     try {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Archive,
   ArchiveRestore,
@@ -43,10 +43,31 @@ export function HabitsView() {
   const habits = useAppStore((s) => s.habits)
   const archiveHabit = useAppStore((s) => s.archiveHabit)
   const removeHabit = useAppStore((s) => s.removeHabit)
+  const habitDraft = useAppStore((s) => s.habitDraft)
+  const setHabitDraft = useAppStore((s) => s.setHabitDraft)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<FormState>(emptyForm())
   const [showArchived, setShowArchived] = useState(false)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (habitDraft) {
+      const base = emptyForm()
+      setEditing({
+        ...base,
+        name: habitDraft.name ?? base.name,
+        type: habitDraft.type ?? base.type,
+        category: habitDraft.category ?? base.category,
+        measurementType: habitDraft.measurementType ?? base.measurementType,
+        targetValue: habitDraft.targetValue ?? base.targetValue,
+        scheduleDays: habitDraft.scheduleDays ?? base.scheduleDays,
+        startDate: habitDraft.startDate ?? base.startDate,
+        endDate: habitDraft.endDate ?? base.endDate,
+      })
+      setDialogOpen(true)
+      setHabitDraft(null)
+    }
+  }, [habitDraft, setHabitDraft])
 
   function openCreate() {
     setEditing(emptyForm())

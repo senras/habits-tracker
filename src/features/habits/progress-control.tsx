@@ -30,7 +30,13 @@ export function statusColorClass(status: HabitLog['status'] | undefined): string
   }
 }
 
-export function ProgressControl({ habit, date, log, disabled }: ProgressControlProps) {
+export function ProgressControl({
+  habit,
+  date,
+  log,
+  disabled,
+  compact = false,
+}: ProgressControlProps & { compact?: boolean }) {
   const setProgress = useAppStore((s) => s.setProgress)
   const value = log?.value ?? 0
 
@@ -39,19 +45,19 @@ export function ProgressControl({ habit, date, log, disabled }: ProgressControlP
   if (habit.measurementType === 'boolean') {
     const done = (log?.status ?? 'incomplete') !== 'incomplete'
     return (
-      <div className="flex items-center gap-1">
+      <div className={cn('flex items-center gap-1', compact && 'gap-0.5')}>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant={done ? 'default' : 'outline'}
               size="icon"
-              className="size-7"
+              className={cn('size-7', compact && 'size-5')}
               disabled={disabled}
               aria-label={done ? `Desmarcar ${habit.name}` : `Completar ${habit.name}`}
               aria-pressed={done}
               onClick={() => update(done ? 0 : habit.targetValue)}
             >
-              <Check className="size-4" />
+              <Check className={cn('size-4', compact && 'size-3')} />
             </Button>
           </TooltipTrigger>
           <TooltipContent>{done ? 'Quitar marca' : 'Completar (+10 pts)'}</TooltipContent>
@@ -61,7 +67,7 @@ export function ProgressControl({ habit, date, log, disabled }: ProgressControlP
             <Button
               variant="ghost"
               size="icon"
-              className="size-7"
+              className={cn('size-7', compact && 'size-5')}
               disabled={disabled || !log}
               aria-label={`Marcar sobre-cumplido ${habit.name}`}
               aria-pressed={log?.status === 'overcompleted'}
@@ -70,6 +76,7 @@ export function ProgressControl({ habit, date, log, disabled }: ProgressControlP
               <Star
                 className={cn(
                   'size-4',
+                  compact && 'size-3',
                   log?.status === 'overcompleted' && 'fill-violet-500 text-violet-500',
                 )}
               />
@@ -83,7 +90,9 @@ export function ProgressControl({ habit, date, log, disabled }: ProgressControlP
 
   if (habit.measurementType === 'percentage') {
     return (
-      <div className="flex w-full min-w-36 items-center gap-2">
+      <div
+        className={cn('flex w-full min-w-36 items-center gap-2', compact && 'min-w-0 gap-1')}
+      >
         <Slider
           min={0}
           max={100}
@@ -92,8 +101,14 @@ export function ProgressControl({ habit, date, log, disabled }: ProgressControlP
           disabled={disabled}
           aria-label={`Progreso de ${habit.name}`}
           onValueChange={([v]) => update(v)}
+          className={cn(compact && 'h-4')}
         />
-        <span className="w-12 text-right font-mono text-xs tabular-nums">
+        <span
+          className={cn(
+            'w-12 text-right font-mono text-xs tabular-nums',
+            compact && 'w-8 text-[10px]',
+          )}
+        >
           {value}%
         </span>
       </div>
@@ -103,8 +118,35 @@ export function ProgressControl({ habit, date, log, disabled }: ProgressControlP
   const unit = habit.measurementType === 'time' ? 'min' : ''
   const step = habit.measurementType === 'time' ? STEP_MINUTES : 1
 
+  if (compact) {
+    return (
+      <div className={cn('flex items-center gap-0.5')}>
+        <Button
+          variant="outline"
+          size="icon"
+          className="size-5"
+          disabled={disabled || value <= 0}
+          aria-label={`Reducir ${habit.name}`}
+          onClick={() => update(Math.max(0, value - step))}
+        >
+          <Minus className="size-2.5" />
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          className="size-5"
+          disabled={disabled}
+          aria-label={`Aumentar ${habit.name}`}
+          onClick={() => update(value + step)}
+        >
+          <Plus className="size-2.5" />
+        </Button>
+      </div>
+    )
+  }
+
   return (
-    <div className="flex items-center gap-1">
+    <div className={cn('flex items-center gap-1')}>
       <Button
         variant="outline"
         size="icon"
@@ -125,7 +167,8 @@ export function ProgressControl({ habit, date, log, disabled }: ProgressControlP
           statusColorClass(log?.status),
         )}
       >
-        {value}/{habit.targetValue} {unit}
+        {value}/{habit.targetValue}
+        {unit && ` ${unit}`}
       </button>
       <Button
         variant="outline"

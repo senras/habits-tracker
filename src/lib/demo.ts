@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid'
 import { computePoints, resolveStatus } from './scoring'
 import { format, subDays } from 'date-fns'
-import type { Habit, HabitLog } from '@/types/domain'
+import type { Habit, HabitLog, Weekday } from '@/types/domain'
 
 const DEMO_HABITS: Omit<Habit, 'id' | 'createdAt'>[] = [
   {
@@ -10,6 +10,7 @@ const DEMO_HABITS: Omit<Habit, 'id' | 'createdAt'>[] = [
     category: 'Estudio',
     measurementType: 'time',
     targetValue: 30,
+    schedule: { mode: 'weekdays', days: [1, 2, 3, 4, 5] as Weekday[] },
     scheduleDays: [1, 2, 3, 4, 5],
     startDate: subDays(new Date(), 70).toISOString().slice(0, 10),
     endDate: null,
@@ -22,6 +23,7 @@ const DEMO_HABITS: Omit<Habit, 'id' | 'createdAt'>[] = [
     category: 'Salud',
     measurementType: 'time',
     targetValue: 45,
+    schedule: { mode: 'weekdays', days: [1, 3, 5] as Weekday[] },
     scheduleDays: [1, 3, 5],
     startDate: subDays(new Date(), 70).toISOString().slice(0, 10),
     endDate: null,
@@ -34,6 +36,7 @@ const DEMO_HABITS: Omit<Habit, 'id' | 'createdAt'>[] = [
     category: 'Salud',
     measurementType: 'counter',
     targetValue: 8,
+    schedule: { mode: 'daily' },
     startDate: subDays(new Date(), 70).toISOString().slice(0, 10),
     endDate: null,
     archived: false,
@@ -45,6 +48,7 @@ const DEMO_HABITS: Omit<Habit, 'id' | 'createdAt'>[] = [
     category: 'Hogar',
     measurementType: 'boolean',
     targetValue: 1,
+    schedule: { mode: 'weekdays', days: [6, 0] as Weekday[] },
     scheduleDays: [6, 0],
     startDate: subDays(new Date(), 70).toISOString().slice(0, 10),
     endDate: null,
@@ -57,6 +61,7 @@ const DEMO_HABITS: Omit<Habit, 'id' | 'createdAt'>[] = [
     category: 'Estudio',
     measurementType: 'counter',
     targetValue: 1,
+    schedule: { mode: 'daily' },
     startDate: subDays(new Date(), 70).toISOString().slice(0, 10),
     endDate: null,
     archived: false,
@@ -68,6 +73,7 @@ const DEMO_HABITS: Omit<Habit, 'id' | 'createdAt'>[] = [
     category: 'Salud',
     measurementType: 'time',
     targetValue: 10,
+    schedule: { mode: 'daily' },
     startDate: subDays(new Date(), 70).toISOString().slice(0, 10),
     endDate: null,
     archived: false,
@@ -103,7 +109,16 @@ export function buildDemoData(today = new Date()): { habits: Habit[]; logs: Habi
     const progress = (69 - offset) / 69
 
     for (const habit of habits) {
-      if (habit.scheduleDays && !habit.scheduleDays.includes(weekday)) continue
+      const schedule = habit.schedule
+      let scheduled = true
+      if (schedule) {
+        if (schedule.mode === 'weekdays' && !schedule.days.includes(weekday)) scheduled = false
+        if (schedule.mode === 'timesPerWeek' || schedule.mode === 'timesPerMonth') scheduled = false
+      } else if (habit.scheduleDays && !habit.scheduleDays.includes(weekday)) {
+        scheduled = false
+      }
+      if (!scheduled) continue
+      if (habit.restDays && habit.restDays.includes(weekday as any)) continue
       if (date > todayStr) continue
 
       const baseRate = habit.type === 'fixed' ? 0.55 + 0.35 * progress : 0.35 + 0.3 * progress
@@ -129,7 +144,8 @@ export function buildDemoData(today = new Date()): { habits: Habit[]; logs: Habi
         status,
         value,
         pointsEarned: computePoints(status),
-        updatedAt: new Date().toISOString(),
+        note: null,
+        updatedAt: new Date(date + 'T08:00:00').toISOString(),
       })
     }
   }

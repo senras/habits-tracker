@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { format } from 'date-fns'
 import type { Habit, MeasurementType } from '@/types/domain'
 import { useAppStore } from '@/stores/appStore'
@@ -89,6 +89,10 @@ export function HabitFormDialog({
   const upsertHabit = useAppStore((s) => s.upsertHabit)
   const habits = useAppStore((s) => s.habits)
   const [form, setForm] = useState<FormState>(initial)
+
+  useEffect(() => {
+    setForm(initial)
+  }, [initial])
 
   const categories = useMemo(
     () => [...new Set(habits.map((h) => h.category).filter(Boolean))],

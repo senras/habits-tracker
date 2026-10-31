@@ -81,11 +81,17 @@ export function computeRates(
 
   for (const date of eachDayInclusive(range.start, range.end)) {
     for (const habit of getScheduledHabitsForDay(habits, date)) {
+      // Check if this scheduled occurrence is excluded by rest/skipped
+      const log = logFor(logs, habit.id, date)
+      if (log && (log.status === 'rest' || log.status === 'skipped')) {
+        continue // not counted as scheduled occurrence (P3)
+      }
       scheduledCount++
-      const status = logFor(logs, habit.id, date)?.status ?? 'incomplete'
+      const status = log?.status ?? 'incomplete'
       if (status === 'completed') completedCount++
       else if (status === 'overcompleted') overcompletedCount++
-      else incompleteCount++
+      else if (status === 'incomplete') incompleteCount++
+      // rest/skipped already skipped
     }
   }
 

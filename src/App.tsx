@@ -108,7 +108,7 @@ export default function App() {
           </button>
         </nav>
 
-        <main className="mx-auto w-full max-w-5xl flex-1 p-4 pb-24 md:p-8">
+        <main className="mx-auto w-full max-w-full flex-1 px-2 pb-24 pt-4 sm:px-3 md:px-4 lg:px-6">
           {status === 'loading' && (
             <p className="mt-20 text-center text-muted-foreground">Cargando…</p>
           )}

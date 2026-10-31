@@ -76,15 +76,46 @@ export function CalendarView() {
       </div>
 
       {calendarMode === 'week' ? (
-        <div>
-          <div className="mb-2 grid grid-cols-7 gap-2">
+        <div className="w-full">
+          <div className="mb-1 hidden grid-cols-7 gap-1.5 xl:grid">
             {WEEKDAYS_SHORT.map((d) => (
-              <p key={d} className="text-center text-xs font-medium uppercase text-muted-foreground">
+              <p key={d} className="text-center text-sm font-medium uppercase text-muted-foreground">
                 {d}
               </p>
             ))}
           </div>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-4 lg:grid-cols-7">
+          <div className="hidden xl:grid xl:grid-cols-5 xl:grid-rows-2 gap-1.5">
+            {weekDaysOf(anchorDate)
+              .slice(0, 4)
+              .map((date) => (
+                <DayCard key={date} date={date} habits={habits} logs={logs} variant="week" />
+              ))}
+            <DayCard
+              key={weekDaysOf(anchorDate)[4]}
+              date={weekDaysOf(anchorDate)[4]}
+              habits={habits}
+              logs={logs}
+              variant="week"
+              className="col-start-1 row-start-2"
+            />
+            <DayCard
+              key={weekDaysOf(anchorDate)[5]}
+              date={weekDaysOf(anchorDate)[5]}
+              habits={habits}
+              logs={logs}
+              variant="week"
+              className="col-start-2 row-start-2"
+            />
+            <DayCard
+              key={weekDaysOf(anchorDate)[6]}
+              date={weekDaysOf(anchorDate)[6]}
+              habits={habits}
+              logs={logs}
+              variant="week"
+              className="col-start-3 row-start-2"
+            />
+          </div>
+          <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-4 xl:hidden">
             {weekDaysOf(anchorDate).map((date) => (
               <DayCard key={date} date={date} habits={habits} logs={logs} variant="week" />
             ))}
